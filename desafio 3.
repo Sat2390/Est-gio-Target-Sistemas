@@ -1,0 +1,53 @@
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+public class FaturamentoDistribuidora {
+    public static void main(String[] args) {
+        List<Double> faturamentos = new ArrayList<>();
+
+  
+        try (FileReader reader = new FileReader("faturamento.json")) {
+            JsonElement jsonElement = JsonParser.parseReader(reader);
+            JsonArray jsonArray = jsonElement.getAsJsonArray();
+
+            for (JsonElement element : jsonArray) {
+                JsonObject obj = element.getAsJsonObject();
+                double valor = obj.get("valor").getAsDouble();
+                if (valor > 0) { // Ignorar dias sem faturamento
+                    faturamentos.add(valor);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+      
+        double menorFaturamento = faturamentos.stream().min(Double::compare).orElse(0.0);
+        double maiorFaturamento = faturamentos.stream().max(Double::compare).orElse(0.0);
+
+        
+        double somaFaturamento = faturamentos.stream().mapToDouble(Double::doubleValue).sum();
+        double mediaMensal = somaFaturamento / faturamentos.size();
+
+       
+        long diasAcimaDaMedia = faturamentos.stream().filter(valor -> valor > mediaMensal).count();
+
+        
+        System.out.println("Menor valor de faturamento: " + menorFaturamento);
+        System.out.println("Maior valor de faturamento: " + maiorFaturamento);
+        System.out.println("Dias com faturamento acima da média: " + diasAcimaDaMedia);
+    }
+}
+JSON
+[
+    {"dia": 1, "valor": 1000.0},
+    {"dia": 2, "valor": 1500.0},
+    {"dia": 3, "valor": 0.0},
+    ...
+]
